@@ -7,38 +7,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id          String    @id @default(uuid())
-  email       String    @unique() // email address.
-  password    String // password
-  role        UserRole  @default(CUSTOMER)
-  Customer    Customer? @relation(fields: [customer_id], references: [id])
-  customer_id String?
+model Otp {
+  id    String @id @default(uuid())
+  otp   Int
+  email String @unique()
 }
 
 model Customer {
-  id            String     @id @default(uuid())
-  first_name    String
-  middle_name   String
-  last_name     String
-  phone         String     @unique()
-  email         String     @unique()
-  // password      String     @db.LongText()
-  date_of_birth String
-  gender        GenderType
-  Accounts      Account[]
-  Addresses     Address[]
-  Documents     Document[]
-  User          User[]
+  id                 String               @id @default(uuid())
+  first_name         String
+  middle_name        String
+  last_name          String
+  phone              String               @unique()
+  email              String               @unique()
+  password           String               @db.LongText()
+  date_of_birth      String
+  gender             String
+  account            Account              @relation(fields: [account_id], references: [id])
+  account_id         String
+  address            Address              @relation(fields: [address_id], references: [id])
+  address_id         String
+  document           Document             @relation(fields: [document_id], references: [id])
+  document_id        String
+  AccountTransaction AccountTransaction[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt()
 }
 
 model Document {
-  id              String        @id @default(uuid())
-  document_type   document_type @default(ADHAAR)
+  id              String     @id @default(uuid())
+  document_type   String
   document_number String
   customerId      String?
-  customer        Customer?     @relation(fields: [customerId], references: [id], map: "Document_customerId_fkey")
   Account         Account[]
+  Customer        Customer[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt()
 
   @@index([customerId], map: "Document_customerId_fkey")
 }
@@ -51,16 +55,27 @@ enum document_type {
 
 model Account {
   id                    String        @id @default(uuid())
-  account_type          AccountType   @default(CURRENT)
+  account_type          String
   account_number        String        @unique()
   ifsc_code             IFSC          @default(BANK0007)
-  account_balance       Float         @default(0.00)
+  account_balance       String
   sent_transactions     Transaction[] @relation("TransactionSender")
   received_transactions Transaction[] @relation("TransactionReceiver")
-  Customer              Customer?     @relation(fields: [customer_id], references: [id])
-  customer_id           String?
   Document              Document      @relation(fields: [document_id], references: [id])
   document_id           String
+  Customer              Customer[]
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt()
+}
+
+model AccountTransaction {
+  id                 String   @id @default(uuid())
+  customer           Customer @relation(fields: [customer_id], references: [id])
+  customer_id        String
+  transaction_type   String
+  transaction_amount String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt()
 }
 
 model Transaction {
@@ -70,20 +85,21 @@ model Transaction {
   Receiver    Account  @relation("TransactionReceiver", fields: [receiver_id], references: [id])
   receiver_id String
   time        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
 }
 
 model Address {
-  id          String       @id @default(uuid())
-  type        address_type @default(REGULAR)
-  country     Country?     @default(INDIA)
-  state       String
-  city        String
-  district    String
-  landmark    String
-  Customer    Customer?    @relation(fields: [customer_id], references: [id], map: "Address_customerId_fkey")
-  customer_id String?
-
-  @@index([customer_id], map: "Address_customerId_fkey")
+  id        String     @id @default(uuid())
+  type      String
+  country   Country?   @default(INDIA)
+  state     String
+  city      String
+  district  String
+  landmark  String
+  Customer  Customer[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt()
 }
 
 model City {
@@ -108,26 +124,6 @@ model State {
   state_title       String @db.VarChar(100)
   state_description String @db.Text
   status            String @db.VarChar(10)
-}
-
-enum address_type {
-  REGULAR
-  DEFAULT
-}
-
-
-enum GenderType {
-  MALE
-  FEMALE
-  OTHER
-}
-
-enum AccountType {
-  CURRENT
-  SAVING
-  SALARY
-  FIXED
-  JOINT
 }
 
 enum IFSC {

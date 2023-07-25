@@ -6,7 +6,7 @@ const auth: RequestHandler = async (req: Request, _: Response, next: NextFunctio
         access_token,
         // refresh_token
     } = req.cookies;
-    
+    // console.log(access_token)
     if (!access_token) {
         return next(CustomErrorHandler.unAuthorized());
     }

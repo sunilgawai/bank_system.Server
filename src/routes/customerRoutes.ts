@@ -1,17 +1,25 @@
 import { Router } from "express";
 import { auth } from "../middlewares";
+import { CustomerController } from "../controllers";
 
 const customerRouter = Router();
 
-// customerRouter.post('/customer', auth, CustomerController.store);
+/**
+ * Get Profile.
+ */
+customerRouter.post('/me', auth, CustomerController.getMyProfile);
 
-// customerRouter.get('/customer', auth, CustomerController.get);
+customerRouter.get('/me/account', auth, CustomerController.getMyAccount);
 
-// customerRouter.get('/customer/:id', auth, CustomerController.view);
+customerRouter.get('/me/account/statements', auth, CustomerController.getMyAccountStatements);
 
-// customerRouter.delete('/customer/:id', auth, CustomerController.delete);
+customerRouter.get('/me/account/transaction', auth, CustomerController.getMyAccountTransactions);
 
-// customerRouter.put('/customer/:id', auth, CustomerController.update);
+customerRouter.get('/me/account/history', auth, CustomerController.getMyAccountHistory);
+
+customerRouter.get('/me/account/deposite', auth, CustomerController.depositMyAccount);
+
+customerRouter.get('/me/account/withdraw', auth, CustomerController.withdrawMyAccount);
 
 
 
