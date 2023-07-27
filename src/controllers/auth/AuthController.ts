@@ -210,6 +210,7 @@ class AuthController {
     next: NextFunction
   ): Promise<any> {
     const { email } = req.body;
+    console.log(req.body)
     const { error } = Joi.object({
       email: Joi.string().required(),
     }).validate(req.body);

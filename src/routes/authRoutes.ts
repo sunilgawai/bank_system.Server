@@ -18,7 +18,7 @@ authRouter.post('/logout', AuthController.logout);
 authRouter.get('/me', auth, AuthController.profile);
 
 // forget password links.
-authRouter.get("/forget-password-otp", AuthController.requestForgotPasswordOtp);
+authRouter.post("/forget-password-otp", AuthController.requestForgotPasswordOtp);
 authRouter.post("/confirm-password-otp", AuthController.confirmForgotPasswordOtp);
 
 export default authRouter;
