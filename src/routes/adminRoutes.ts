@@ -5,10 +5,16 @@ import { auth } from "../middlewares";
 const adminRouter = Router();
 
 // Create a new customer.
+adminRouter.get('/details', AdminController.getAllDetails);
+
+
+// Create a new customer.
 adminRouter.post('/customers/', AdminController.storeCustomer);
 
 // Get Customers.
 adminRouter.get('/customers/', AdminController.getCustomers);
+
+adminRouter.get('/accounts/history', AdminController.getAllAccountHistory);
 
 // View Customers.
 adminRouter.get('/customers/:id', auth, AdminController.viewCustomer);
@@ -32,5 +38,7 @@ adminRouter.put('/accounts/:id', AccountController.updateAccount);
 // Delete a Account.
 adminRouter.delete('/accounts/:id', AccountController.deleteAccount);
 
+
+// Delete a Account.
 
 export default adminRouter;

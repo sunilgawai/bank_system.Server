@@ -12,13 +12,13 @@ class CustomerController {
     try {
       profile = await database.customer.findUnique({
         where: {
-            id: req.user.id
+          id: req.user.id,
         },
         include: {
           account: true,
           address: true,
           document: true,
-          AccountTransaction: true
+          AccountTransaction: true,
         },
       });
     } catch (error) {
@@ -37,11 +37,11 @@ class CustomerController {
     try {
       account = await database.customer.findUnique({
         where: {
-          id:req.user.id
+          id: req.user.id,
         },
         select: {
-            account: true
-        }
+          account: true,
+        },
       });
     } catch (error) {
       return next(error);
@@ -50,32 +50,9 @@ class CustomerController {
     res.status(200).json(account);
   }
 
-  static async getMyAccountStatements(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
-    let account;
-    try {
-      account = await database.customer.findUnique({
-        where: {
-          id:req.user.id
-        },
-        select: {
-            account: {
-                include: {
-                    received_transactions: true,
-                    sent_transactions: true
-                }
-            }
-        }
-      });
-    } catch (error) {
-      return next(error);
-    }
+  // not in use
 
-    res.status(200).json(account);
-  }
+
 
   static async getMyAccountTransactions(
     req: Request,
@@ -84,12 +61,13 @@ class CustomerController {
   ): Promise<any> {
     let transactions;
     try {
-      transactions = await database.transaction.findMany({
+      transactions = await database.accountTransaction.findMany({
         where: {
-          sender_id: req.user.id
+          customer_id: req.user.id
         },
+        take: 5,
         include: {
-         Receiver: true
+          customer: true
         },
       });
     } catch (error) {
@@ -106,12 +84,12 @@ class CustomerController {
   ): Promise<any> {
     let transactions;
     try {
-      transactions = await database.transaction.findMany({
+      transactions = await database.accountTransaction.findMany({
         where: {
-          sender_id: req.user.id
+          customer_id: req.user.id
         },
         include: {
-         Receiver: true
+          customer: true
         },
       });
     } catch (error) {
@@ -126,6 +104,7 @@ class CustomerController {
     res: Response,
     next: NextFunction
   ): Promise<any> {
+    console.log("req user", req.user);
     const { amount } = req.body;
     let customer;
     try {
@@ -140,37 +119,55 @@ class CustomerController {
     if (!customer || !customer.account) {
       return next(CustomErrorHandler.unAuthorized(""));
     }
+    // console.log({ customer, amount });
 
     // Check if the deposit amount is valid
     const depositAmount = parseFloat(amount);
+    console.log("depositAmount", depositAmount);
     if (isNaN(depositAmount) || depositAmount <= 0) {
-      CustomErrorHandler.wrongCredentials("Invalid withdrawal amount.");
+      return next(CustomErrorHandler.wrongCredentials("Invalid withdrawal amount."));
+    }
 
-      // Calculate the updated account balance after deposit
-      const currentBalance = parseFloat(customer.account.account_balance);
-      const updatedBalance = (currentBalance + depositAmount).toFixed(2);
-
-      let account;
-      try {
-        account = await database.customer.update({
-          where: { id: req.user.id },
-          data: {
-            account: {
-              update: {
-                account_balance: updatedBalance,
-              },
+    // Calculate the updated account balance after deposit
+    const currentBalance = parseFloat(customer.account.account_balance);
+    const updatedBalance = (currentBalance + depositAmount).toFixed(2);
+    console.log("updatedBalance", updatedBalance);
+    let account;
+    try {
+      account = await database.customer.update({
+        where: { id: req.user.id },
+        data: {
+          account: {
+            update: {
+              account_balance: updatedBalance,
             },
           },
-          include: {
-            AccountTransaction: true,
-          },
-        });
-      } catch (error) {
-        return next(error);
-      }
-
-      res.status(200).json(customer);
+        },
+        include: {
+          AccountTransaction: true,
+          account: true,
+          address: true,
+          document: true,
+        },
+      });
+    } catch (error) {
+      return next(error);
     }
+
+    // create a transaction record.
+    try {
+      await database.accountTransaction.create({
+        data: {
+          customer_id: req.user.id,
+          transaction_type: "DEPOSITE",
+          transaction_amount: String(depositAmount),
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+    console.log("sending response", account);
+    res.status(200).json(account);
   }
 
   static async withdrawMyAccount(
@@ -179,6 +176,7 @@ class CustomerController {
     next: NextFunction
   ): Promise<any> {
     const { amount } = req.body;
+    console.log({ amount });
     let customer;
     try {
       customer = await database.customer.findUnique({
@@ -225,13 +223,29 @@ class CustomerController {
         },
         include: {
           AccountTransaction: true,
+          account: true,
+          address: true,
+          document: true,
         },
       });
     } catch (error) {
       return next(error);
     }
 
-    res.status(200).json(customer);
+    // create a transaction record.
+    try {
+      await database.accountTransaction.create({
+        data: {
+          customer_id: req.user.id,
+          transaction_type: "WITHDRAW",
+          transaction_amount: String(withdrawalAmount),
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+
+    res.status(200).json(account);
   }
 
   static async moneyTransfer(

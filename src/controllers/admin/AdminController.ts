@@ -116,6 +116,7 @@ class AdminController {
           password,
           date_of_birth,
           gender,
+          role: 'customer',
           account_id: account.id,
           document_id: document.id,
           address_id: address.id,
@@ -169,6 +170,7 @@ class AdminController {
     res: Response,
     next: NextFunction
   ): Promise<any> {
+    console.log("cusomter", req.body)
     const {
       first_name,
       middle_name,
@@ -272,6 +274,48 @@ class AdminController {
     } catch (error) {
       return next(error);
     }
+  }
+
+  static async getAllAccountHistory(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
+    let transactions;
+    try {
+      transactions = await database.accountTransaction.findMany({
+        include: {
+          customer: true
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+
+    res.status(200).json(transactions);
+  }
+
+  static async getAllDetails(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
+    let transactions, accounts, customers, documents;
+    try {
+      transactions = await database.accountTransaction.count();
+      accounts = await database.account.count()
+      customers = await database.customer.count()
+      documents = await database.document.count()
+    } catch (error) {
+      return next(error);
+    }
+
+    res.status(200).json({
+      transactions,
+      accounts,
+      customers,
+      documents
+    });
   }
 }
 

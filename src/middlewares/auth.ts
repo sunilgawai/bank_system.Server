@@ -17,7 +17,6 @@ const auth: RequestHandler = async (req: Request, _: Response, next: NextFunctio
             id: id,
             role: role
         };
-
         next();
     } catch (error) {
         return next(CustomErrorHandler.unAuthorized());

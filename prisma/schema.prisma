@@ -23,6 +23,7 @@ model Customer {
   password           String               @db.LongText()
   date_of_birth      String
   gender             String
+  role               String?
   account            Account              @relation(fields: [account_id], references: [id])
   account_id         String
   address            Address              @relation(fields: [address_id], references: [id])

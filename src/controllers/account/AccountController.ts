@@ -138,7 +138,7 @@ class AccountController {
         },
         include: {
           customer: true,
-        },
+        }
       });
     } catch (error) {
       return next(error);
@@ -222,6 +222,19 @@ class AccountController {
         return next(error);
       }
 
+      // create a transaction record.
+    try {
+      await database.accountTransaction.create({
+        data: {
+          customer_id: req.user.id,
+          transaction_type: 'WITHDRAW',
+          transaction_amount: String(depositAmount)
+        }
+      })
+    } catch (error) {
+      return next(error);
+    }
+
       res.status(200).json(customer);
     }
   }
@@ -280,6 +293,19 @@ class AccountController {
           AccountTransaction: true,
         },
       });
+    } catch (error) {
+      return next(error);
+    }
+
+    // create a transaction record.
+    try {
+      await database.accountTransaction.create({
+        data: {
+          customer_id: req.user.id,
+          transaction_type: 'WITHDRAW',
+          transaction_amount: String(withdrawalAmount)
+        }
+      })
     } catch (error) {
       return next(error);
     }
