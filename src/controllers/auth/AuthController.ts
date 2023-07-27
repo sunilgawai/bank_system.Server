@@ -140,7 +140,10 @@ class AuthController {
     } catch (error) {
       return next(error);
     }
-    const access_token = JwtService.sign({ id: customer.id, role: customer.role });
+    const access_token = JwtService.sign({
+      id: customer.id,
+      role: customer.role,
+    });
     res.cookie("access_token", access_token, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
@@ -210,7 +213,7 @@ class AuthController {
     next: NextFunction
   ): Promise<any> {
     const { email } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     const { error } = Joi.object({
       email: Joi.string().required(),
     }).validate(req.body);
@@ -241,7 +244,7 @@ class AuthController {
     }
 
     const otp = await AccountService.generateRandomOtp();
-
+    console.log("otp", otp);
     try {
       await database.otp.create({
         data: {
@@ -252,15 +255,16 @@ class AuthController {
     } catch (error) {
       return next(error);
     }
-
-    AccountService.sendMailOnForgotPasswordRequest(email, otp)
-      .then((results) => {
-        console.log(results);
-        res.status(200).json({ message: "password reset otp sent." });
-      })
-      .catch((error) => {
-        return next(error);
-      });
+    res.status(200).json({ message: "password reset otp sent." });
+    // temp removed.
+    // AccountService.sendMailOnForgotPasswordRequest(email, otp)
+    //   .then((results) => {
+    //     console.log(results);
+    //     res.status(200).json({ message: "password reset otp sent." });
+    //   })
+    //   .catch((error) => {
+    //     return next(error);
+    //   });
   }
 
   static async confirmForgotPasswordOtp(
@@ -273,6 +277,7 @@ class AuthController {
       email: Joi.string().required(),
       otp: Joi.string().required(),
     }).validate(req.body);
+    console.log('by confirmation body', req.body);
 
     if (error) {
       return next(error);
@@ -321,16 +326,18 @@ class AuthController {
     } catch (error) {
       return next(error);
     }
+    console.log('new password.',randomPassword)
+    res.status(200).json("temporary password send");
 
-    AccountService.sendMailOnConfirmForgotPasswordOtp(email, randomPassword)
-      .then((results) => {
-        console.log(results);
-        res.status(200).json("temporary password send");
-      }).catch((errror) => {
-        console.log(error);
-        return next(error);
-      })
-
+    // temp removed.
+    // AccountService.sendMailOnConfirmForgotPasswordOtp(email, randomPassword)
+    //   .then((results) => {
+    //     console.log(results);
+    //     res.status(200).json("temporary password send");
+    //   }).catch((errror) => {
+    //     console.log(error);
+    //     return next(error);
+    //   })
   }
 
   static async profile(
