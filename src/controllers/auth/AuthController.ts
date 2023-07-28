@@ -65,7 +65,8 @@ class AuthController {
         res.status(200).json({ message: "Otp sent successfully." });
       })
       .catch((err) => {
-        return next(CustomErrorHandler.serverError("couldn't send otp."));
+        res.status(200).json({ message: "Otp sent successfully." });
+        // return next(CustomErrorHandler.serverError("couldn't send otp."));
       });
   }
 
@@ -255,16 +256,16 @@ class AuthController {
     } catch (error) {
       return next(error);
     }
-    res.status(200).json({ message: "password reset otp sent." });
+    // res.status(200).json({ message: "password reset otp sent." });
     // temp removed.
-    // AccountService.sendMailOnForgotPasswordRequest(email, otp)
-    //   .then((results) => {
-    //     console.log(results);
-    //     res.status(200).json({ message: "password reset otp sent." });
-    //   })
-    //   .catch((error) => {
-    //     return next(error);
-    //   });
+    AccountService.sendMailOnForgotPasswordRequest(email, otp)
+      .then((results) => {
+        console.log(results);
+        res.status(200).json({ message: "password reset otp sent." });
+      })
+      .catch((error) => {
+        return next(error);
+      });
   }
 
   static async confirmForgotPasswordOtp(
@@ -327,17 +328,17 @@ class AuthController {
       return next(error);
     }
     console.log('new password.',randomPassword)
-    res.status(200).json("temporary password send");
+    // res.status(200).json("temporary password send");
 
     // temp removed.
-    // AccountService.sendMailOnConfirmForgotPasswordOtp(email, randomPassword)
-    //   .then((results) => {
-    //     console.log(results);
-    //     res.status(200).json("temporary password send");
-    //   }).catch((errror) => {
-    //     console.log(error);
-    //     return next(error);
-    //   })
+    AccountService.sendMailOnConfirmForgotPasswordOtp(email, randomPassword)
+      .then((results) => {
+        console.log(results);
+        res.status(200).json("temporary password send");
+      }).catch((errror) => {
+        console.log(error);
+        return next(error);
+      })
   }
 
   static async profile(

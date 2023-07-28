@@ -1,0 +1,25 @@
+model state {
+  state_id          Int    @id @default(autoincrement())
+  state_title       String @db.VarChar(100)
+  state_description String @db.Text
+  status            String @db.VarChar(10)
+}
+
+
+model district {
+  districtid           Int    @id @default(autoincrement())
+  district_title       String @db.VarChar(100)
+  state_id             Int?
+  district_description String @db.Text
+  district_status      String @db.VarChar(10)
+}
+
+
+model city {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(100)
+  districtid  Int?
+  state_id    Int?
+  description String  @db.Text
+  status      String? @db.VarChar(10)
+}

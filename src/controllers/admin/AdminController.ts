@@ -55,6 +55,7 @@ class AdminController {
 
     // Getting random password;
     const randomPassword = await AccountService.generateRandomPassword();
+    console.log("randomPassword", randomPassword);
 
     // Hasing password.
     const password = await bcrypt.hash(randomPassword, 10);
@@ -74,6 +75,7 @@ class AdminController {
 
     // Account Creationg.
     let account_number = await AccountService.generateAccountNumber();
+    console.log("account_number", account_number);
     let account;
     try {
       account = await database.account.create({
@@ -103,6 +105,19 @@ class AdminController {
       return next(error);
     }
 
+    // Creating document for customer.
+    let customer_document;
+    try {
+      customer_document = await database.document.create({
+        data: {
+          document_type,
+          document_number,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+
     // Database Submissions.
     let customer;
     try {
@@ -116,10 +131,10 @@ class AdminController {
           password,
           date_of_birth,
           gender,
-          role: 'customer',
+          role: "customer",
           account_id: account.id,
-          document_id: document.id,
           address_id: address.id,
+          document_id: customer_document.id,
         },
         include: {
           account: true,
@@ -132,12 +147,68 @@ class AdminController {
       return next(error);
     }
 
-    await AccountService.sendMailOnAccountCreate(customer.email, randomPassword)
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((err) => console.log(err));
+    // await AccountService.sendMailOnAccountCreate(customer.email, randomPassword)
+    //   .then((response) => {
+    //     console.log("response", response);
+    //   })
+    //   .catch((err) => console.log(err));
     res.status(200).json(customer);
+  }
+
+  static async deleteCustomer(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
+    const customerId = req.params.id;
+
+    try {
+      const customer = await database.customer.findUnique({
+        where: { id: customerId },
+        include: {
+          document: true,
+          account: {
+            include: {
+              Document: true,
+            },
+          },
+          address: true,
+        },
+      });
+
+      if (!customer) {
+        return next(CustomErrorHandler.notFound("Customer not found."));
+      }
+
+       // Delete accounts of customer (which will also delete the associated documents).
+    if (customer.account) {
+      await database.account.delete({ where: { id: customer.account.id } });
+    }
+
+    if (customer.account?.Document) {
+      await database.document.delete({ where: { id: customer.account.Document.id } });
+    }
+
+    // Delete document of customer.
+    if (customer.document) {
+      await database.document.delete({ where: { id: customer.document.id } });
+    }
+
+    // Delete address of customer.
+    if (customer.address) {
+      await database.address.delete({ where: { id: customer.address.id } });
+    }
+
+    // Delete customer.
+    const deletedCustomer = await database.customer.delete({
+      where: { id: customerId },
+    });
+
+      res.status(200).json(deletedCustomer);
+    } catch (error) {
+      console.error(error);
+      return next(error);
+    }
   }
 
   static async getCustomers(
@@ -170,7 +241,7 @@ class AdminController {
     res: Response,
     next: NextFunction
   ): Promise<any> {
-    console.log("cusomter", req.body)
+    console.log("cusomter", req.body);
     const {
       first_name,
       middle_name,
@@ -221,28 +292,6 @@ class AdminController {
     }
   }
 
-  static async deleteCustomer(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
-    try {
-      const customer = await database.customer.delete({
-        where: {
-          id: req.params.id,
-        },
-      });
-
-      if (!customer) {
-        return next(CustomErrorHandler.notFound("Customer not found."));
-      }
-
-      res.status(200).json(customer);
-    } catch (error) {
-      return next(error);
-    }
-  }
-
   static async viewCustomer(
     req: Request,
     res: Response,
@@ -269,7 +318,7 @@ class AdminController {
       //   expires: new Date(Date.now() + 900000),
       //   httpOnly: true,
       // });
-      console.log('user', req.user);
+      console.log("user", req.user);
       res.status(200).json(customer);
     } catch (error) {
       return next(error);
@@ -285,7 +334,7 @@ class AdminController {
     try {
       transactions = await database.accountTransaction.findMany({
         include: {
-          customer: true
+          customer: true,
         },
       });
     } catch (error) {
@@ -303,9 +352,9 @@ class AdminController {
     let transactions, accounts, customers, documents;
     try {
       transactions = await database.accountTransaction.count();
-      accounts = await database.account.count()
-      customers = await database.customer.count()
-      documents = await database.document.count()
+      accounts = await database.account.count();
+      customers = await database.customer.count();
+      documents = await database.document.count();
     } catch (error) {
       return next(error);
     }
@@ -314,7 +363,7 @@ class AdminController {
       transactions,
       accounts,
       customers,
-      documents
+      documents,
     });
   }
 }

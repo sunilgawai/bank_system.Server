@@ -24,12 +24,12 @@ model Customer {
   date_of_birth      String
   gender             String
   role               String?
-  account            Account              @relation(fields: [account_id], references: [id])
-  account_id         String
-  address            Address              @relation(fields: [address_id], references: [id])
-  address_id         String
-  document           Document             @relation(fields: [document_id], references: [id])
-  document_id        String
+  account            Account?              @relation(fields: [account_id], references: [id])
+  account_id         String?
+  address            Address?              @relation(fields: [address_id], references: [id])
+  address_id         String?
+  document           Document?             @relation(fields: [document_id], references: [id])
+  document_id        String?
   AccountTransaction AccountTransaction[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt()
@@ -39,13 +39,13 @@ model Document {
   id              String     @id @default(uuid())
   document_type   String
   document_number String
-  customerId      String?
+  // customerId      String?
   Account         Account[]
   Customer        Customer[]
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt()
 
-  @@index([customerId], map: "Document_customerId_fkey")
+  // @@index([customerId], map: "Document_customerId_fkey")
 }
 
 enum document_type {
@@ -81,10 +81,10 @@ model AccountTransaction {
 
 model Transaction {
   id          String   @id @default(uuid())
-  Sender      Account  @relation("TransactionSender", fields: [sender_id], references: [id])
-  sender_id   String
-  Receiver    Account  @relation("TransactionReceiver", fields: [receiver_id], references: [id])
-  receiver_id String
+  Sender      Account?  @relation("TransactionSender", fields: [sender_id], references: [id])
+  sender_id   String?
+  Receiver    Account?  @relation("TransactionReceiver", fields: [receiver_id], references: [id])
+  receiver_id String?
   time        DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt()
@@ -103,30 +103,6 @@ model Address {
   updatedAt DateTime   @updatedAt()
 }
 
-// model City {
-//   id          Int     @id @default(autoincrement())
-//   name        String  @db.VarChar(100)
-//   districtid  Int?
-//   state_id    Int?
-//   description String  @db.Text
-//   status      String? @db.VarChar(10)
-// }
-
-// model District {
-//   districtid           Int    @id @default(autoincrement())
-//   district_title       String @db.VarChar(100)
-//   state_id             Int?
-//   district_description String @db.Text
-//   district_status      String @db.VarChar(10)
-// }
-
-// model State {
-//   state_id          Int    @id @default(autoincrement())
-//   state_title       String @db.VarChar(100)
-//   state_description String @db.Text
-//   status            String @db.VarChar(10)
-// }
-
 enum IFSC {
   BANK0007
 }
@@ -138,4 +114,28 @@ enum Country {
 enum UserRole {
   ADMIN
   CUSTOMER
+}
+
+model state {
+  state_id          Int    @id @default(autoincrement())
+  state_title       String @db.VarChar(100)
+  state_description String @db.Text
+  status            String @db.VarChar(10)
+}
+
+model city {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(100)
+  districtid  Int?
+  state_id    Int?
+  description String  @db.Text
+  status      String? @db.VarChar(10)
+}
+
+model district {
+  districtid           Int    @id @default(autoincrement())
+  district_title       String @db.VarChar(100)
+  state_id             Int?
+  district_description String @db.Text
+  district_status      String @db.VarChar(10)
 }

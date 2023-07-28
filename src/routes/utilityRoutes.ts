@@ -6,6 +6,7 @@ const utilityRouter = Router();
 utilityRouter.get('/location/states', UtilityController.getStates);
 utilityRouter.get('/location/cities', UtilityController.getCities);
 utilityRouter.get('/location/districts', UtilityController.getDistricts);
+utilityRouter.get('/location', UtilityController.getLocation);
 
 
 // utilityRouter.get('/departments', UtilityController.getDepartments);
