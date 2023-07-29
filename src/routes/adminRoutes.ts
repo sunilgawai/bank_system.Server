@@ -38,6 +38,9 @@ adminRouter.put('/accounts/:id', AccountController.updateAccount);
 // Delete a Account.
 adminRouter.delete('/accounts/:id', AccountController.deleteAccount);
 
+// Get Accounts Logs.
+adminRouter.get('/accounts/logs', AccountController.getAccountsLogs);
+
 
 // Delete a Account.
 

@@ -153,9 +153,10 @@ class AuthController {
         data: {
           log_by: customer.email,
           log_type: "LOGIN",
-        },
+        }
       });
     } catch (error) {
+      console.log('error in log', error);
       return next(error);
     }
 

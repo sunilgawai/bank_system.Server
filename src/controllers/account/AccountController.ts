@@ -138,7 +138,7 @@ class AccountController {
         },
         include: {
           customer: true,
-        }
+        },
       });
     } catch (error) {
       return next(error);
@@ -172,6 +172,23 @@ class AccountController {
     }
 
     res.status(200).json(account);
+  }
+
+  static async getAccountsLogs(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
+    try {
+      await database.logs.findMany({
+        take: 15,
+        orderBy: {
+          log_time: "desc", // Sort logs by log_time in descending order (most recent first)
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   static async moneyTransfer(
