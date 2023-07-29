@@ -179,32 +179,44 @@ class AdminController {
       if (!customer) {
         return next(CustomErrorHandler.notFound("Customer not found."));
       }
-
-      // Delete accounts of customer (which will also delete the associated documents).
-      if (customer.account) {
-        await database.account.delete({ where: { id: customer.account.id } });
+      
+      let deletedCustomer;
+      try {
+        deletedCustomer = await database.customer.delete({
+          where: { id: customerId }
+        })
+      } catch (error) {
+        console.log(error);
+        return next(error);
       }
 
-      if (customer.account?.Document) {
-        await database.document.delete({
-          where: { id: customer.account.Document.id },
-        });
+      try {
+        await database.address.delete({where: {id: customer.address?.id}});
+      } catch (error) {
+        console.log('error in customer address delete.', error);
+        return next(error);
       }
 
-      // Delete document of customer.
-      if (customer.document) {
-        await database.document.delete({ where: { id: customer.document.id } });
+      try {
+        await database.document.delete({where: {id: customer.document?.id}});
+      } catch (error) {
+        console.log('error in customer document delete.', error);
+        return next(error);
       }
 
-      // Delete address of customer.
-      if (customer.address) {
-        await database.address.delete({ where: { id: customer.address.id } });
+      try {
+        await database.account.delete({where: {id: customer.account?.id}});
+      } catch (error) {
+        console.log('error in account delete.', error);
+        return next(error);
       }
 
-      // Delete customer.
-      const deletedCustomer = await database.customer.delete({
-        where: { id: customerId },
-      });
+      try {
+        await database.document.delete({where: {id: customer.account?.Document.id}});
+      } catch (error) {
+        console.log('error in account document delete.', error);
+        return next(error);
+      }
 
       res.status(200).json(deletedCustomer);
     } catch (error) {
