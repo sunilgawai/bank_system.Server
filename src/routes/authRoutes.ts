@@ -14,7 +14,7 @@ authRouter.post("/verify-otp", AuthController.verifyOtp);
 // authRouter.post("/login", AuthController.login);
 authRouter.post("/reset-password",auth, AuthController.changePassword);
 authRouter.post("/reset-password",auth, AuthController.changePassword);
-authRouter.post('/logout', AuthController.logout);
+authRouter.post('/logout', auth, AuthController.logout);
 authRouter.get('/me', auth, AuthController.profile);
 
 // forget password links.

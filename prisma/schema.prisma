@@ -13,6 +13,14 @@ model Otp {
   email String @unique()
 }
 
+model logs {
+  id       String   @id @default(uuid())
+  log_type String
+  log_by   String
+  log_time DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
 model Customer {
   id                 String               @id @default(uuid())
   first_name         String
@@ -24,11 +32,11 @@ model Customer {
   date_of_birth      String
   gender             String
   role               String?
-  account            Account?              @relation(fields: [account_id], references: [id])
+  account            Account?             @relation(fields: [account_id], references: [id])
   account_id         String?
-  address            Address?              @relation(fields: [address_id], references: [id])
+  address            Address?             @relation(fields: [address_id], references: [id])
   address_id         String?
-  document           Document?             @relation(fields: [document_id], references: [id])
+  document           Document?            @relation(fields: [document_id], references: [id])
   document_id        String?
   AccountTransaction AccountTransaction[]
   createdAt          DateTime             @default(now())
@@ -81,9 +89,9 @@ model AccountTransaction {
 
 model Transaction {
   id          String   @id @default(uuid())
-  Sender      Account?  @relation("TransactionSender", fields: [sender_id], references: [id])
+  Sender      Account? @relation("TransactionSender", fields: [sender_id], references: [id])
   sender_id   String?
-  Receiver    Account?  @relation("TransactionReceiver", fields: [receiver_id], references: [id])
+  Receiver    Account? @relation("TransactionReceiver", fields: [receiver_id], references: [id])
   receiver_id String?
   time        DateTime @default(now())
   createdAt   DateTime @default(now())

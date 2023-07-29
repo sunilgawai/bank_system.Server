@@ -104,7 +104,6 @@ class CustomerController {
     res: Response,
     next: NextFunction
   ): Promise<any> {
-    console.log("req user", req.user);
     const { amount } = req.body;
     let customer;
     try {
@@ -166,7 +165,18 @@ class CustomerController {
     } catch (error) {
       return next(error);
     }
-    console.log("sending response", account);
+    
+    // Creating log of actions.
+    try {
+      await database.logs.create({
+        data: {
+          log_by: customer.email!,
+          log_type: "DEPOSIT",
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
     res.status(200).json(account);
   }
 
@@ -239,6 +249,18 @@ class CustomerController {
           customer_id: req.user.id,
           transaction_type: "WITHDRAW",
           transaction_amount: String(withdrawalAmount),
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+
+    // Creating log of actions.
+    try {
+      await database.logs.create({
+        data: {
+          log_by: customer.email!,
+          log_type: "WITHDRAW",
         },
       });
     } catch (error) {

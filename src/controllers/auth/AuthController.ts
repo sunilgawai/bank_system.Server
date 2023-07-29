@@ -20,7 +20,7 @@ class AuthController {
       return next(error);
     }
 
-    console.log(req.body);
+    // console.log(req.body);
     let customer;
     try {
       customer = await database.customer.findUnique({
@@ -62,11 +62,16 @@ class AuthController {
 
     AccountService.sendMailOnOtpRequest(customer.email, opt)
       .then(() => {
+        try {
+          // await database
+        } catch (error) {
+          return next(error);
+        }
         res.status(200).json({ message: "Otp sent successfully." });
       })
       .catch((err) => {
-        res.status(200).json({ message: "Otp sent successfully." });
-        // return next(CustomErrorHandler.serverError("couldn't send otp."));
+        // res.status(200).json({ message: "Otp sent successfully." });
+        return next(CustomErrorHandler.serverError("couldn't send otp."));
       });
   }
 
@@ -141,6 +146,19 @@ class AuthController {
     } catch (error) {
       return next(error);
     }
+
+    // creating a log of actions.
+    try {
+      await database.logs.create({
+        data: {
+          log_by: customer.email,
+          log_type: "LOGIN",
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+
     const access_token = JwtService.sign({
       id: customer.id,
       role: customer.role,
@@ -158,6 +176,24 @@ class AuthController {
     res: Response,
     next: NextFunction
   ): Promise<any> {
+    let user;
+    try {
+      user = await database.customer.findUnique({
+        where: { id: req.user.id },
+      });
+    } catch (error) {
+      return next(error);
+    }
+    try {
+      await database.logs.create({
+        data: {
+          log_by: user?.email!,
+          log_type: "LOGOUT",
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
     res.clearCookie("access_token");
     res.status(200).json({ message: "Logged out." });
   }
@@ -202,6 +238,16 @@ class AuthController {
           password: hashedPassword,
         },
       });
+      try {
+        await database.logs.create({
+          data: {
+            log_by: customer.email,
+            log_type: "PASSWORD CHANGED",
+          },
+        });
+      } catch (error) {
+        return next(error);
+      }
     } catch (error) {
       return next(error);
     }
@@ -278,7 +324,7 @@ class AuthController {
       email: Joi.string().required(),
       otp: Joi.string().required(),
     }).validate(req.body);
-    console.log('by confirmation body', req.body);
+    console.log("by confirmation body", req.body);
 
     if (error) {
       return next(error);
@@ -327,7 +373,7 @@ class AuthController {
     } catch (error) {
       return next(error);
     }
-    console.log('new password.',randomPassword)
+    console.log("new password.", randomPassword);
     // res.status(200).json("temporary password send");
 
     // temp removed.
@@ -335,10 +381,11 @@ class AuthController {
       .then((results) => {
         console.log(results);
         res.status(200).json("temporary password send");
-      }).catch((errror) => {
+      })
+      .catch((errror) => {
         console.log(error);
         return next(error);
-      })
+      });
   }
 
   static async profile(
