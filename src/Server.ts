@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { authRouter, customerRouter, utilityRouter, adminRouter } from "./routes";
 import bodyParser from "body-parser";
 import cors from "cors";
+import path from "path";
 
 // Application init.
 const app: Application = express();
@@ -25,13 +26,9 @@ app.use('/api/auth', authRouter);
 app.use('/api', customerRouter);
 app.use('/api', utilityRouter);
 
-app.use(async (req, res) => {
-    if (req.path == '/') return res.json({ msg: 'Welcome to Out Bank.' });
-
-    res.send(`
-    <h2>No Information Found For This Route.</h2>
-    <a href="http:localhost:4000">Home Route</a>
-    `)
+app.use(express.static("build"))
+app.use(function (req, res, next) {
+    return res.sendFile(path.join(__dirname, "..", "build", "index.html"))
 })
 
 // Error Handler.
