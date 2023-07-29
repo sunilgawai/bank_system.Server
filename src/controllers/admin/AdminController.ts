@@ -180,29 +180,31 @@ class AdminController {
         return next(CustomErrorHandler.notFound("Customer not found."));
       }
 
-       // Delete accounts of customer (which will also delete the associated documents).
-    if (customer.account) {
-      await database.account.delete({ where: { id: customer.account.id } });
-    }
+      // Delete accounts of customer (which will also delete the associated documents).
+      if (customer.account) {
+        await database.account.delete({ where: { id: customer.account.id } });
+      }
 
-    if (customer.account?.Document) {
-      await database.document.delete({ where: { id: customer.account.Document.id } });
-    }
+      if (customer.account?.Document) {
+        await database.document.delete({
+          where: { id: customer.account.Document.id },
+        });
+      }
 
-    // Delete document of customer.
-    if (customer.document) {
-      await database.document.delete({ where: { id: customer.document.id } });
-    }
+      // Delete document of customer.
+      if (customer.document) {
+        await database.document.delete({ where: { id: customer.document.id } });
+      }
 
-    // Delete address of customer.
-    if (customer.address) {
-      await database.address.delete({ where: { id: customer.address.id } });
-    }
+      // Delete address of customer.
+      if (customer.address) {
+        await database.address.delete({ where: { id: customer.address.id } });
+      }
 
-    // Delete customer.
-    const deletedCustomer = await database.customer.delete({
-      where: { id: customerId },
-    });
+      // Delete customer.
+      const deletedCustomer = await database.customer.delete({
+        where: { id: customerId },
+      });
 
       res.status(200).json(deletedCustomer);
     } catch (error) {
@@ -358,12 +360,25 @@ class AdminController {
     } catch (error) {
       return next(error);
     }
+    let logs;
+    try {
+      logs = await database.logs.findMany({
+        take: 15,
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+    } catch (error) {
+      console.log("error by logs", error);
+      return next(error);
+    }
 
     res.status(200).json({
       transactions,
       accounts,
       customers,
       documents,
+      logs
     });
   }
 }

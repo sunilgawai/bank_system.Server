@@ -179,16 +179,20 @@ class AccountController {
     res: Response,
     next: NextFunction
   ): Promise<any> {
+    console.log('in logs')
+    let logs;
     try {
-      await database.logs.findMany({
+      logs = await database.logs.findMany({
         take: 15,
-        orderBy: {
-          log_time: "desc", // Sort logs by log_time in descending order (most recent first)
-        },
-      });
+        // orderBy: {
+        //   createdAt: 'desc'
+        // }
+      })
     } catch (error) {
+      console.log('error by logs', error);
       return next(error);
     }
+    res.status(200).json(logs);
   }
 
   static async moneyTransfer(
