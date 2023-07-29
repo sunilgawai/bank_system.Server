@@ -365,7 +365,7 @@ class AdminController {
       logs = await database.logs.findMany({
         take: 15,
         orderBy: {
-          createdAt: 'desc'
+          createdAt: 'asc'
         }
       });
     } catch (error) {
