@@ -33,11 +33,11 @@ model Customer {
   date_of_birth      String
   gender             String
   role               String?
-  account            Account?             @relation(fields: [account_id], references: [id])
+  account            Account?             @relation(fields: [account_id], references: [id], onDelete: Cascade)
   account_id         String?
-  address            Address?             @relation(fields: [address_id], references: [id])
+  address            Address?             @relation(fields: [address_id], references: [id], onDelete: Cascade)
   address_id         String?
-  document           Document?            @relation(fields: [document_id], references: [id])
+  document           Document?            @relation(fields: [document_id], references: [id], onDelete: Cascade)
   document_id        String?
   AccountTransaction AccountTransaction[]
   createdAt          DateTime             @default(now())
@@ -71,7 +71,7 @@ model Account {
   account_balance       String
   sent_transactions     Transaction[] @relation("TransactionSender")
   received_transactions Transaction[] @relation("TransactionReceiver")
-  Document              Document      @relation(fields: [document_id], references: [id])
+  Document              Document      @relation(fields: [document_id], references: [id], onDelete: Cascade)
   document_id           String
   Customer              Customer[]
   createdAt             DateTime      @default(now())
